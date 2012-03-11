@@ -1,0 +1,9 @@
+*.sw*
+*.txt
+*.o
+out
+colortest
+gate
+gate_bench
+gate_generator
+matrix_benchmark
