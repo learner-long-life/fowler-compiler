@@ -27,3 +27,7 @@ run_valgrind_test() {
 
 run_valgrind_test 0 "creating structure"
 run_valgrind_test 1 "inserting and finding in structure"
+run_valgrind_test 2 "inserting multiple items"
+run_valgrind_test 3 "inserting into right bin"
+run_valgrind_test 4 "inserting into opposite bin"
+run_valgrind_test 5 "test searching wrong matrix"
