@@ -1,6 +1,7 @@
 #ifndef MATRIXH
 #define MATRIXH
 
+#include "stdio.h"
 #include "complex.h"
 
 typedef struct {

@@ -11,7 +11,7 @@ main07a.o: complex.h matrix.h main07a.c
 	g++ -g3 -c main07a.c
 
 clean:
-	rm -f gate complex.o matrix.o main07a.o
+	rm -f gate complex.o matrix.o main07a.o *.tmp
 
 gate_generator.o: gate_generator.c
 	g++ -c gate_generator.c
@@ -41,6 +41,20 @@ gate_dist: complex.o matrix.o main07a_dist.o
 
 main07a_dist.o: complex.h matrix.h main07a.c
 	g++ -g3 -DDISTANCES -c main07a.c -o main07a_dist.o
+
+# Meet-in-the-middle binning structure
+bin.o: bin.cpp bin.h
+	g++ -g3 -c bin.cpp -o bin.o
+
+# Test binning structure
+tests/bin_test.o: tests/bin_test.cpp
+	g++ -g3 -c tests/bin_test.cpp -o tests/bin_test.o
+
+tests/bin_test: tests/bin_test.o bin.o
+	g++ -lm -lrt -o tests/bin_test tests/bin_test.o bin.o
+
+test: tests/bin_test
+	tests/tests.sh
 
 # Matrix distance binning
 #gate_dist: complex.o matrix.o main07a_dist.o
