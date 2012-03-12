@@ -1,7 +1,7 @@
 *.o
 *.sw*
 *.tmp
-*.txt
+/*.txt
 colortest
 gate
 gate_bench

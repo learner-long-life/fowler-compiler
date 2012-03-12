@@ -1,4 +1,13 @@
 #include "bin.h"
+#include <limits>
+
+#define DEBUG_BINS
+
+#ifdef DEBUG_BINS
+#include <iostream>
+#endif
+
+using namespace std;
 
 MatrixItem::MatrixItem(Matrix &_mtx, double _dist, int _sequence_index,
                        int _sequence_length, MatrixItem* _next) :
@@ -27,12 +36,89 @@ void BinSet::insert(double dist, Matrix &m,
 
   // Find place to insert item
   unsigned int bin = find(dist);
-  MatrixItem** item = side ? &(left_bins[bin]) : &(right_bins[bin]);
+  MatrixItem** item = side ? &(right_bins[bin]) : &(left_bins[bin]);
   while (*item != NULL) { item = &((*item)->next); }
+#ifdef DEBUG_BINS
+  cout << "Inserting item into bin " << bin << endl;
+#endif
 
   // Add item to bin
   *item = new MatrixItem(m, dist, sequence_index,
                          sequence_length, NULL);
+}
+
+int BinSet::contains(Matrix &m, double dist, double threshold, bool side) {
+  // Determine number and location of bins to search in.
+  int min_bin = find(dist - threshold);
+  int max_bin = find(dist + threshold);
+  int search_bin_count = max_bin - min_bin + 1;
+#ifdef DEBUG_BINS
+  cout << "Will search bins " << min_bin << " to " << max_bin << endl;
+#endif
+
+  // Initialize list of bin pointers.
+  // They will keep track of our search position in each bin.
+  MatrixItem **bins_to_search = new MatrixItem*[search_bin_count];
+  int bin = 0;
+  MatrixItem **haystack = side ? right_bins : left_bins;
+  for (int i = min_bin; i <= max_bin; i++) {
+    bins_to_search[bin++] = haystack[i];
+  }
+
+  // Search for the appropriate bin.
+  int current_length = 1;
+  bool items_left = true;
+  int next_smallest_length;
+  while (items_left) {
+    items_left = false;
+    next_smallest_length = numeric_limits<int>::max();
+    for (int i = 0; i < search_bin_count; i++) {
+      // See if we have an item to examine
+      MatrixItem *item = bins_to_search[i];
+      if (item == NULL) { continue; }
+#ifdef DEBUG_BINS
+      cout << "Examining matrix in bin " << (i+min_bin) << endl;
+#endif
+      items_left = true;
+
+      // Skip over long sequences
+      if (item->sequence_length < next_smallest_length) {
+        next_smallest_length = item->sequence_length;
+      }
+      if (item->sequence_length > current_length) { continue; }
+
+      // Both matrices should have about the same distance
+      // to the target matrix.  Otherwise, by the triangle
+      // inequality, we know they won't be near each other.
+      double dist_diff = dist - item->dist;
+#ifdef DEBUG_BINS
+        cout << "Matrix distance: " << dist_diff << endl;
+#endif
+      if (dist_diff >= -threshold && dist_diff <= threshold) {
+        // Now, see if the matrices are within the threshold distance of
+        // each other.  If they are, then one could connect their corresponding
+        // sequences to obtain a result matrix.
+        // Thus, the sequence for the discovered matrix should be returned.
+        double mtx_diff = md(item->mtx, m) - dist;
+#ifdef DEBUG_BINS
+        cout << "Distance between matrices: " << mtx_diff << endl;
+#endif
+        if (mtx_diff >= 2 - threshold) {
+#ifdef DEBUG_BINS
+        cout << "MATRIX FOUND! Sequence " << item->sequence_index << endl;
+#endif
+          delete [] bins_to_search;
+          return item->sequence_index;
+        }
+      }
+
+      // Since a result wasn't found, advance the pointer.
+      bins_to_search[i] = item->next;
+    }
+    current_length = next_smallest_length;
+  }
+  delete [] bins_to_search;
+  return -1;
 }
 
 void BinSet::destroy_bins(MatrixItem **bins) {
@@ -44,9 +130,10 @@ void BinSet::destroy_bins(MatrixItem **bins) {
       item = next;
     }
   }
+  delete [] bins;
 }
 
 BinSet::~BinSet() {
-  delete [] left_bins;
-  delete [] right_bins;
+  destroy_bins(left_bins);
+  destroy_bins(right_bins);
 }

@@ -33,6 +33,7 @@ protected:
   inline int find(double dist);
 
   /**
+
    * Destroys bin lists.
    */
   void destroy_bins(MatrixItem **bins);
@@ -54,10 +55,24 @@ public:
 
   /**
    * Inserts a matrix into the bin set.
+   * TODO: finish documentation here.
+   *  - side - true if the matrix is on the right side,
+   *           false on the left.
    */
   void insert(double dist, Matrix &m,
               int sequence_index, int sequence_length,
               bool side);
+
+  /**
+   * Determines if a matrix exists in the set that is within threshold of
+   * the target matrix in the search, which is also within threshold of the
+   * given matrix.
+   *
+   * If the matrix exists, the index of its gate sequence is returned.
+   *
+   * Otherwise, -1 is returned.
+   */
+  int contains(Matrix &m, double dist, double threshold, bool side);
 };
 
 #endif // BIN_H

@@ -50,8 +50,8 @@ bin.o: bin.cpp bin.h
 tests/bin_test.o: tests/bin_test.cpp
 	g++ -g3 -c tests/bin_test.cpp -o tests/bin_test.o
 
-tests/bin_test: tests/bin_test.o bin.o
-	g++ -lm -lrt -o tests/bin_test tests/bin_test.o bin.o
+tests/bin_test: tests/bin_test.o bin.o matrix.o complex.o
+	g++ -lm -lrt -o tests/bin_test tests/bin_test.o bin.o matrix.o complex.o
 
 test: tests/bin_test
 	tests/tests.sh

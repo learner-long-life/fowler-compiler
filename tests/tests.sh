@@ -2,22 +2,28 @@
 # Runs unit tests on bin.
 cd tests
 
-# Test creating a structure.
-valgrind ./bin_test 0 2>results.tmp
+# Runs a test.  Provide this function with the test number.
+run_valgrind_test() {
+  # Test creating a structure.
+  valgrind ./bin_test "$1" 2>results.tmp
 
-if [[ $? != 0 ]]; then
-  echo "FAILED creating structure"
-else
-  if [[ -e create_structure_results.txt ]]; then
-    sed "s/\s*==.*==\s*//" < results.tmp | diff - create_structure_results.txt
-    if [[ $? == 1 ]]; then
-      echo "FAILED creating structure"
-    else
-      echo "PASSED creating structure"
-    fi
+  if [[ $? != 0 ]]; then
+    echo "FAILED $2"
   else
-    echo "Created structure results file:"
-    sed "s/\s*==.*==\s*//" < results.tmp > create_structure_results.txt
-    cat create_structure_results.txt
+    if [[ -e "$1_stderr.txt" ]]; then
+      sed "s/\s*==.*==\s*//" < results.tmp | diff - "$1_stderr.txt"
+      if [[ $? == 1 ]]; then
+        echo "FAILED $2"
+      else
+        echo "PASSED $2"
+      fi
+    else
+      echo "Created structure results file:"
+      sed "s/\s*==.*==\s*//" < results.tmp > "$1_stderr.txt"
+      cat "$1_stderr.txt"
+    fi
   fi
-fi
+}
+
+run_valgrind_test 0 "creating structure"
+run_valgrind_test 1 "inserting and finding in structure"
