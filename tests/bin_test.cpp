@@ -8,8 +8,8 @@ using namespace std;
  * Test creating and destroying a BinSet.
  */
 void test_creating_bin_set() {
-  BinSet* set = bin_create(0, 4, 10000);
-  bin_destroy(set);
+  BinSet *set = new BinSet(0, 4, 10000);
+  delete set;
 }
 
 int main(int argc, char* argv[]) {
