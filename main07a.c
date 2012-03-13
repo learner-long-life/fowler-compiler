@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef BIN
+  #include <map>
+#endif
 #include <math.h>
 #include <assert.h>
 
@@ -61,17 +64,30 @@ int overwrite_product(int start, int list);
 int skip_product(int last_most_significant); 
 int skip_product_print(int last_most_significant); 
 int skip_product_long(int last_most_significant, int width); 
-int is_unique_product();
 void calculate_product(int last_most_significant);
-void add_matrix_to_unique();
+#ifdef BIN
+   int is_unique_product(double mtx_dist);
+   void add_matrix_to_unique(double mtx_dist);
+   void add_matrix_to_structures(double mtx_dist);
+#else
+   int is_unique_product();
+   void add_matrix_to_unique();
+   void add_matrix_to_structures();
+#endif
 void insert_product_in_list();
 void insert_product_in_tree();
-void add_matrix_to_structures();
 
 double Pi, sqrt2o2, epsilon;
 int *product;
 int *unique_product_lists;
-Matrix *unique_matrices;
+#ifdef BIN
+  typedef std::multimap<double, Matrix> MatrixDistMap;
+  typedef std::pair<double, Matrix> MatrixDistPair;
+  typedef MatrixDistMap::iterator MatrixDistIter;
+  MatrixDistMap unique_matrices;
+#else
+  Matrix *unique_matrices;
+#endif
 int *product_check_tree;
 int most_significant, free_list, num_unique, free_node;
 Matrix U, U1, U2, U3, U4, gate_list[NG];
@@ -133,11 +149,13 @@ int main() {
    free_list=2;
    fprintf(out, "Size of unique_product_lists = %d\n", 25*n);
 
+#ifndef BIN
    unique_matrices=(Matrix *)calloc(n, sizeof(Matrix));
    if (unique_matrices==NULL) exit(0);
    mi(&unique_matrices[0]);
-   num_unique=1;
    fprintf(out, "Size of unique_matrices = %d\n", n);
+#endif
+   num_unique=1;
 
    product_check_tree=(int *)calloc((NG+2)*n, sizeof(int));
    if (product_check_tree==NULL) exit(0);
@@ -292,6 +310,7 @@ int main() {
 #ifdef BIN
    // use the triangle-inequality distance measure
    dist = md_tri(gate_list[I], G);
+   unique_matrices.insert(MatrixDistPair(dist, gate_list[I]));
 #else
    dist = md(gate_list[I],G);
 #endif
@@ -312,9 +331,9 @@ int main() {
       last_most_significant = skip_product(last_most_significant);
       calculate_product(last_most_significant);
 
-      if (is_unique_product()) {
 #ifdef BIN
-         temp_dist = md_tri(U1,G);
+      temp_dist = md_tri(U1,G);
+      if (is_unique_product(temp_dist)) {
          int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
                                            dist);
          if (seq_index != -1) {
@@ -327,10 +346,12 @@ int main() {
          // TODO: replicate seq_bins.contains in the second stage check.
          Matrix inv = mm(G, minv(U1));
          seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1);
+         add_matrix_to_structures(temp_dist);
 #else
+      if (is_unique_product()) {
          temp_dist=md(U1,G);
-#endif
          add_matrix_to_structures();
+#endif
          #ifdef DISTANCES
          printf("Dist: %.9f\n", temp_dist);
          #endif
@@ -430,7 +451,9 @@ int main() {
    fclose(out);
    free(product);
    free(unique_product_lists);
+#ifndef BIN
    free(unique_matrices);
+#endif
    free(product_check_tree);
 
    return 0;
@@ -473,12 +496,20 @@ void print_product(FILE *out, int *product, int most_significant) {
 }
 
 void print_unique_matrices(FILE *out) {
+#ifdef BIN
+   for (MatrixDistIter iter = unique_matrices.begin();
+        iter != unique_matrices.end(); iter++) {
+      pm(out, iter->second);
+      fprintf(out, "\n");
+   }
+#else
    int i;
 
    for (i=0; i<num_unique; i++) {
       pm(out, unique_matrices[i]);
       fprintf(out, "\n");
    }
+#endif
 }
 
 void print_unique_product_lists(FILE *out) {
@@ -708,6 +739,16 @@ int skip_product_long(int last_most_significant, int width) {
    return last_most_significant;
 }
 
+#ifdef BIN
+int is_unique_product(double product_dist) {
+   MatrixDistIter end = unique_matrices.upper_bound(product_dist + epsilon);
+   for (MatrixDistIter iter = unique_matrices.lower_bound(product_dist - epsilon);
+        iter != end; iter++) {
+      if (md(U1, iter->second) > 4-epsilon) return 0;
+   }
+   return 1;
+}
+#else
 int is_unique_product() {
    int i;
    
@@ -717,6 +758,7 @@ int is_unique_product() {
 
    return 1;
 }
+#endif
 
 void calculate_product(int last_most_significant) {
    int i;
@@ -749,9 +791,13 @@ void calculate_product(int last_most_significant) {
    }
 }
 
+#ifdef BIN
+void add_matrix_to_unique(double mtx_dist) {
+   unique_matrices.insert(MatrixDistPair(mtx_dist, U1));
+#else
 void add_matrix_to_unique() {
-   // TODO: get rid of unique matrix structure
    unique_matrices[num_unique]=U1;
+#endif
    num_unique++;
 }
 
@@ -808,8 +854,8 @@ void insert_product_in_tree() {
    }
 }
 
-void add_matrix_to_structures() {
+void add_matrix_to_structures(double mtx_dist) {
    insert_product_in_tree();
    insert_product_in_list();
-   add_matrix_to_unique();
+   add_matrix_to_unique(mtx_dist);
 }
