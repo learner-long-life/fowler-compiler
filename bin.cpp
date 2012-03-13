@@ -61,6 +61,21 @@ void BinSet::insert(double dist, Matrix m,
                          sequence_length, NULL);
 }
 
+void BinSet::delete_short_sequences(int min_length) {
+  for (int i = 0; i < bin_count; i++) {
+    MatrixItem** item = &(right_bins[i]);
+    while (*item != NULL) {
+      if ((*item)->sequence_length < min_length) {
+        MatrixItem *temp = *item;
+        *item = temp->next;
+        delete temp;
+      } else {
+        item = &((*item)->next);
+      }
+    }
+  }
+}
+
 int BinSet::contains(Matrix m, double dist, double threshold, bool side,
                      double &acc) {
   // Determine number and location of bins to search in.

@@ -324,8 +324,6 @@ int main() {
             fflush(out);
          }
          // TODO: replicate seq_bins.contains in the second stage check.
-         // TODO: we probably don't need the first bin.
-         seq_bins.insert(temp_dist, U1, free_list, most_significant + 1, false);
          Matrix inv = mm(G, minv(U1));
          seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1, true);
 #else
@@ -375,8 +373,7 @@ int main() {
    }
 #endif
 #ifdef BIN
-   seq_bins.print(out, print_sequence);
-   return 0;
+   seq_bins.delete_short_sequences(width);
 #endif
 #ifdef DISTANCES
    return 0;
@@ -391,9 +388,26 @@ int main() {
       last_most_significant=increment_product(0);
       last_most_significant = skip_product_long(last_most_significant, width);
       calculate_product(last_most_significant);
+#ifdef BIN
+      temp_dist = md_tri(U1,G);
+      int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, true,
+                                        dist);
+      if (seq_index != -1) {
+         fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
+                 dist);
+         print_product(out, product, most_significant);
+         print_sequence(out, seq_index);
+         fflush(out);
+      }
+
+      // the distance decreases, so signs get swapped
+      if (temp_dist < dist + epsilon) {
+         if (temp_dist < dist - epsilon) {
+#else
       temp_dist=md(U1,G);
       if (temp_dist>dist-epsilon) {
          if (temp_dist>dist+epsilon) {
+#endif
             dist=temp_dist;
             fprintf(out, "dist=%17.13e\n", dist);
          }

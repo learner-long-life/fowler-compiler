@@ -64,4 +64,4 @@ gate_bin: complex.o matrix.o main07a_bin.o bin.o
 	g++ -lm -lrt -o gate_bin complex.o matrix.o main07a_bin.o bin.o
 
 main07a_bin.o: complex.h matrix.h main07a.c
-	g++ -g3 -DBIN -c main07a.c -o main07a_bin.o
+	g++ -g3 -DBENCHMARK -DBIN -c main07a.c -o main07a_bin.o

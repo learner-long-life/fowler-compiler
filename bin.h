@@ -26,6 +26,9 @@ public:
  * A set of bins, into which matrices are inserted by
  * distance.
  */
+// TODO: remove the left bin because it's not used anymore.
+// TODO: remove all but the longest and second-longest sequences to optimize
+// memory use.
 class BinSet {
 protected:
   inline int find(double dist);
@@ -78,6 +81,12 @@ public:
 
   void print_bin(MatrixItem **bin, FILE *out, void (*print_sequence)(FILE*, int));
   void print(FILE *out, void (*print_sequence)(FILE*, int));
+
+  /**
+   * Delete all sequences shorter than min_length, to speed up computation.
+   */
+  // TODO: compress the heap to improve cache locality.
+  void delete_short_sequences(int min_length);
 };
 
 #endif // BIN_H

@@ -1,0 +1,45 @@
+number of unique products to find n: 10200, width: 15
+Size of product = 100
+Size of unique_product_lists = 255000
+Size of unique_matrices = 10200
+Size of product_check_tree = 285600
+input_format: 1
+numerator: 1, denominator: 8
+dist=1.3861716919909e-01
+T
+gate=2
+gate=3
+gate=4
+gate=5
+Found 'meet in the middle' sequence with distance 0.1118533716: 
+HTHTH
+THT(SH)
+gate=6
+gate=7
+gate=8
+Found 'meet in the middle' sequence with distance 0.0397214057: 
+HTHTHT(HS)T
+HT(HS)THTH
+gate=9
+gate=10
+gate=11
+gate=12
+gate=13
+gate=14
+Found 'meet in the middle' sequence with distance 0.0258999471: 
+HTHTHTHTHT(HS)T(HS)T
+HTHTHTHT(HS)T(HS)T(XSdH)
+gate=15
+gate=16
+num_unique: 10193
+Found 'meet in the middle' sequence with distance 0.0211092589: 
+HTHTHTHT(HS)T(HS)THT(HS)T
+HT(HS)THT(HS)T(HS)T(HS)T(HS)T(HX)
+gate=17
+gate=18
+Found 'meet in the middle' sequence with distance 0.0099253975: 
+HTHTHTHTHT(HS)T(HS)THTHT
+(HS)T(HS)T(HS)THTHT(HS)THT(HS)
+gate=19
+gate=20
+gate=21
