@@ -79,7 +79,7 @@ Matrix U, U1, U2, U3, U4, gate_list[NG];
 FILE *out;
 
 #ifdef BIN
-BinSet seq_bins(0, 1, 10000);
+BinSet seq_bins;
 double gate_accuracy = .112;
 
 void print_sequence(FILE* out, int index) {

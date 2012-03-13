@@ -15,15 +15,17 @@ public:
   int sequence_index; // Index where the sequence that
                       // generated this matrix begins.
   int sequence_length; // Length of the sequence.
-  MatrixItem* next;
 
   MatrixItem(Matrix &_mtx, double _dist, int _sequence_index,
-             int _sequence_length, MatrixItem* _next);
+             int _sequence_length);
 
   void print(FILE *out, void (*print_sequence)(FILE*,int));
 };
 
-typedef std::map<int, MatrixItem**> BinMap;
+typedef std::multimap<double, MatrixItem> DistMap;
+typedef DistMap::iterator DistMapIter;
+typedef std::pair<double, MatrixItem> DistMapPair;
+typedef std::map<int, DistMap> BinMap;
 
 /**
  * A set of bins, into which matrices are inserted by
@@ -34,20 +36,9 @@ typedef std::map<int, MatrixItem**> BinMap;
 // memory use.
 class BinSet {
 protected:
-  /**
-   * Finds the index for the given distance.
-   */
-  inline int find(double dist);
-
-  /**
-   * Destroys the given bin.
-   */
-  void destroy_bin(MatrixItem** bin);
+  BinMap bins;
 
 public:
-  double min, range;
-  int bin_count;
-  BinMap bins;
 
   /**
    * Creates a new BinSet.
@@ -55,12 +46,7 @@ public:
    *  - range - add to min to get the max distance value.
    *  - bin_count - the number of bins in this BinSet.
    */
-  BinSet(double _min, double _range, int _bin_count);
-
-  /**
-   * Frees a BinSet.
-   */
-  ~BinSet();
+  BinSet();
 
   /**
    * Inserts a matrix into the bin set.
