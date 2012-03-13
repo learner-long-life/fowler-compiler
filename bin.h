@@ -2,6 +2,7 @@
 #define BIN_H
 
 #include <stdio.h>
+#include <map>
 #include "matrix.h"
 
 /**
@@ -22,6 +23,8 @@ public:
   void print(FILE *out, void (*print_sequence)(FILE*,int));
 };
 
+typedef std::map<int, MatrixItem**> BinMap;
+
 /**
  * A set of bins, into which matrices are inserted by
  * distance.
@@ -31,18 +34,20 @@ public:
 // memory use.
 class BinSet {
 protected:
+  /**
+   * Finds the index for the given distance.
+   */
   inline int find(double dist);
 
   /**
-   * Destroys bin lists.
+   * Destroys the given bin.
    */
-  void destroy_bins(MatrixItem **bins);
+  void destroy_bin(MatrixItem** bin);
 
 public:
   double min, range;
   int bin_count;
-  struct MatrixItem **left_bins;
-  struct MatrixItem **right_bins;
+  BinMap bins;
 
   /**
    * Creates a new BinSet.
@@ -60,12 +65,9 @@ public:
   /**
    * Inserts a matrix into the bin set.
    * TODO: finish documentation here.
-   *  - side - true if the matrix is on the right side,
-   *           false on the left.
    */
   void insert(double dist, Matrix m,
-              int sequence_index, int sequence_length,
-              bool side);
+              int sequence_index, int sequence_length);
 
   /**
    * Determines if a matrix exists in the set that is within threshold of
@@ -76,11 +78,8 @@ public:
    *
    * Otherwise, -1 is returned.
    */
-  int contains(Matrix m, double dist, double threshold, bool side,
+  int contains(Matrix m, double dist, double threshold,
                double &acc);
-
-  void print_bin(MatrixItem **bin, FILE *out, void (*print_sequence)(FILE*, int));
-  void print(FILE *out, void (*print_sequence)(FILE*, int));
 
   /**
    * Delete all sequences shorter than min_length, to speed up computation.

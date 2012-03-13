@@ -95,10 +95,11 @@ void print_sequence(FILE* out, int index) {
 //double *distances;
 //int next_dist;
 //#endif
+int width;
 
 int main() {
    int last_most_significant, input_format, numerator, denominator;
-   int n, width;
+   int n;
    double dist, temp_dist, x, y;
    Matrix G;
    FILE *in = (FILE *)fopen("in", "r");
@@ -314,7 +315,7 @@ int main() {
       if (is_unique_product()) {
 #ifdef BIN
          temp_dist = md_tri(U1,G);
-         int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, true,
+         int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
                                            dist);
          if (seq_index != -1) {
             fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
@@ -325,7 +326,7 @@ int main() {
          }
          // TODO: replicate seq_bins.contains in the second stage check.
          Matrix inv = mm(G, minv(U1));
-         seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1, true);
+         seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1);
 #else
          temp_dist=md(U1,G);
 #endif
@@ -390,8 +391,7 @@ int main() {
       calculate_product(last_most_significant);
 #ifdef BIN
       temp_dist = md_tri(U1,G);
-      int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, true,
-                                        dist);
+      int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, dist);
       if (seq_index != -1) {
          fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
                  dist);
@@ -545,6 +545,11 @@ int increment_product(int start) {
       most_significant=i;
       fprintf(out, "gate=%d\n", most_significant+1);
       fflush(out);
+#ifdef BIN
+      if (most_significant > 1 && most_significant-1 <= width) {
+        seq_bins.delete_short_sequences(most_significant-1);
+      }
+#endif
    }
 
    return i;
