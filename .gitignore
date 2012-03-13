@@ -5,6 +5,7 @@
 colortest
 gate
 gate_bench
+gate_bin
 gate_generator
 matrix_benchmark
 out

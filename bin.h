@@ -1,6 +1,7 @@
 #ifndef BIN_H
 #define BIN_H
 
+#include <stdio.h>
 #include "matrix.h"
 
 /**
@@ -17,6 +18,8 @@ public:
 
   MatrixItem(Matrix &_mtx, double _dist, int _sequence_index,
              int _sequence_length, MatrixItem* _next);
+
+  void print(FILE *out, void (*print_sequence)(FILE*,int));
 };
 
 /**
@@ -25,20 +28,18 @@ public:
  */
 class BinSet {
 protected:
-  double min, range;
-  int bin_count;
-  struct MatrixItem **left_bins;
-  struct MatrixItem **right_bins;
-
   inline int find(double dist);
 
   /**
-
    * Destroys bin lists.
    */
   void destroy_bins(MatrixItem **bins);
 
 public:
+  double min, range;
+  int bin_count;
+  struct MatrixItem **left_bins;
+  struct MatrixItem **right_bins;
 
   /**
    * Creates a new BinSet.
@@ -59,7 +60,7 @@ public:
    *  - side - true if the matrix is on the right side,
    *           false on the left.
    */
-  void insert(double dist, Matrix &m,
+  void insert(double dist, Matrix m,
               int sequence_index, int sequence_length,
               bool side);
 
@@ -72,7 +73,11 @@ public:
    *
    * Otherwise, -1 is returned.
    */
-  int contains(Matrix &m, double dist, double threshold, bool side);
+  int contains(Matrix m, double dist, double threshold, bool side,
+               double &acc);
+
+  void print_bin(MatrixItem **bin, FILE *out, void (*print_sequence)(FILE*, int));
+  void print(FILE *out, void (*print_sequence)(FILE*, int));
 };
 
 #endif // BIN_H

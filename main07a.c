@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+
+#include "bin.h"
 #include "complex.h"
 #include "matrix.h"
 
@@ -75,6 +77,19 @@ int most_significant, free_list, num_unique, free_node;
 Matrix U, U1, U2, U3, U4, gate_list[NG];
 
 FILE *out;
+
+#ifdef BIN
+BinSet seq_bins(0, 1, 10000);
+double gate_accuracy = .112;
+
+void print_sequence(FILE* out, int index) {
+   int end = index + unique_product_lists[index];
+   for (int i = index + 1; i <= end; i++) {
+     print_gate(out, unique_product_lists[i]);
+   }
+   fprintf(out, "\n");
+}
+#endif
 
 //#ifdef DISTANCES
 //double *distances;
@@ -273,8 +288,16 @@ int main() {
    gate_list[Td].z22.x = sqrt2o2;
    gate_list[Td].z22.y = -sqrt2o2;
 
-   dist=md(gate_list[I],G);
+#ifdef BIN
+   // use the triangle-inequality distance measure
+   dist = md_tri(gate_list[I], G);
+#else
+   dist = md(gate_list[I],G);
+#endif
    fprintf(out, "dist=%17.13e\n", dist);
+
+   fprintf(stderr, "G-1 * G should be the identity:\n");
+   pm(stderr, mm(minv(gate_list[Td]), gate_list[Td]));
 
 #ifdef BENCHMARK
    printf("Beginning enumeration...\n", num_unique);
@@ -287,14 +310,39 @@ int main() {
       last_most_significant=increment_product(0);
       last_most_significant = skip_product(last_most_significant);
       calculate_product(last_most_significant);
+
       if (is_unique_product()) {
-         add_matrix_to_structures();
+#ifdef BIN
+         temp_dist = md_tri(U1,G);
+         int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, true,
+                                           dist);
+         if (seq_index != -1) {
+            fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
+                    dist);
+            print_product(out, product, most_significant);
+            print_sequence(out, seq_index);
+            fflush(out);
+         }
+         // TODO: replicate seq_bins.contains in the second stage check.
+         // TODO: we probably don't need the first bin.
+         seq_bins.insert(temp_dist, U1, free_list, most_significant + 1, false);
+         Matrix inv = mm(G, minv(U1));
+         seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1, true);
+#else
          temp_dist=md(U1,G);
+#endif
+         add_matrix_to_structures();
          #ifdef DISTANCES
          printf("Dist: %.9f\n", temp_dist);
          #endif
+#ifdef BIN
+         // the distance decreases, so signs get swapped
+         if (temp_dist < dist + epsilon) {
+            if (temp_dist < dist - epsilon) {
+#else
          if (temp_dist>dist-epsilon) {
             if (temp_dist>dist+epsilon) {
+#endif
                dist=temp_dist;
                fprintf(out, "dist=%17.13e\n", dist);
             }
@@ -325,6 +373,10 @@ int main() {
       printf("num_unique: %d\n", num_unique);
       printf("Elapsed time: %.9f\n", duration);
    }
+#endif
+#ifdef BIN
+   seq_bins.print(out, print_sequence);
+   return 0;
 #endif
 #ifdef DISTANCES
    return 0;
@@ -679,6 +731,7 @@ void calculate_product(int last_most_significant) {
 }
 
 void add_matrix_to_unique() {
+   // TODO: get rid of unique matrix structure
    unique_matrices[num_unique]=U1;
    num_unique++;
 }

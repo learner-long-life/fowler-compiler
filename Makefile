@@ -47,18 +47,21 @@ bin.o: bin.cpp bin.h
 	g++ -g3 -c bin.cpp -o bin.o
 
 # Test binning structure
+tests/bin_debug.o: bin.cpp bin.h
+	g++ -g3 -DDEBUG_BINS -c bin.cpp -o bin.o
+
 tests/bin_test.o: tests/bin_test.cpp
 	g++ -g3 -c tests/bin_test.cpp -o tests/bin_test.o
 
-tests/bin_test: tests/bin_test.o bin.o matrix.o complex.o
-	g++ -lm -lrt -o tests/bin_test tests/bin_test.o bin.o matrix.o complex.o
+tests/bin_test: tests/bin_test.o tests/bin_debug.o matrix.o complex.o
+	g++ -lm -lrt -o tests/bin_test tests/bin_test.o tests/bin_debug.o matrix.o complex.o
 
 test: tests/bin_test
 	tests/tests.sh
 
-# Matrix distance binning
-#gate_dist: complex.o matrix.o main07a_dist.o
-#	g++ -lm -lrt -o gate_dist complex.o matrix.o main07a_dist.o
-#
-#main07a_dist.o: complex.h matrix.h main07a.c
-#	g++ -g3 -DDISTANCES -c main07a.c -o main07a_dist.o
+# Use binning structure
+gate_bin: complex.o matrix.o main07a_bin.o bin.o
+	g++ -lm -lrt -o gate_bin complex.o matrix.o main07a_bin.o bin.o
+
+main07a_bin.o: complex.h matrix.h main07a.c
+	g++ -g3 -DBIN -c main07a.c -o main07a_bin.o

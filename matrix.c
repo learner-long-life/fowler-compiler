@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <math.h>
 #include "matrix.h"
 
 void mz(Matrix *Mptr) {
@@ -41,6 +41,23 @@ double md(Matrix M1, Matrix M2) {
    z22 = ca(cm(cc(M1.z12), M2.z12), cm(cc(M1.z22), M2.z22));
 
    return my_cabs(ca(z11, z22));
+}
+
+double md_tri(Matrix M1, Matrix M2) {
+   return sqrt((2 - sqrt(md(M1, M2)))/2);
+}
+
+Matrix minv(Matrix M1) {
+  Complex denom = cs(cm(M1.z11, M1.z22), cm(M1.z12, M1.z21));
+  double denom_sq = denom.x*denom.x + denom.y*denom.y;
+  Complex coeff = {denom.x/denom_sq, -denom.y/denom_sq};
+  Complex neg_coeff = {-coeff.x, -coeff.y};
+  Matrix m;
+  m.z11 = cm(M1.z22,     coeff);
+  m.z12 = cm(M1.z12, neg_coeff);
+  m.z21 = cm(M1.z21, neg_coeff);
+  m.z22 = cm(M1.z11,     coeff);
+  return m;
 }
 
 void pm(FILE *out, Matrix M) {
