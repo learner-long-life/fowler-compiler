@@ -120,6 +120,10 @@ void print_sequence(FILE* out, int index) {
 }
 #endif
 
+#ifdef OTHER_DIST
+Matrix ref_mtx;
+#endif
+
 //#ifdef DISTANCES
 //double *distances;
 //int next_dist;
@@ -127,6 +131,13 @@ void print_sequence(FILE* out, int index) {
 int width;
 
 int main() {
+#ifdef OTHER_DIST
+   // initialize reference matrix with pi/5 gate
+   mz(&ref_mtx);
+   ref_mtx.z11.x = 1;
+   ref_mtx.z22.x = sin(1/5.);
+   ref_mtx.z22.y = cos(1/5.);
+#endif
 #ifdef PRODUCT_LOOKUP_TREE
    // Initialize product lookup tree to zeroes.
    { for (int i = 0; i < NG; i++) { product_lookup_tree.push_back(0); } }
@@ -348,8 +359,14 @@ int main() {
 #ifdef BIN
       temp_dist = md_tri(U1,G);
       if (is_unique_product(temp_dist)) {
+#ifdef OTHER_DIST
+         double other_dist = md_tri(U1, ref_mtx);
+         int seq_index = seq_bins.contains(U1, other_dist, dist - epsilon,
+                                           dist);
+#else
          int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
                                            dist);
+#endif
          if (seq_index != -1) {
             fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
                     dist);
@@ -359,7 +376,12 @@ int main() {
          }
          // TODO: replicate seq_bins.contains in the second stage check.
          Matrix inv = mm(G, minv(U1));
+#ifdef OTHER_DIST
+         seq_bins.insert(md_tri(inv, ref_mtx), inv, free_list,
+                         most_significant + 1);
+#else
          seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1);
+#endif
          add_matrix_to_structures(temp_dist);
 #else
       if (is_unique_product()) {
@@ -429,7 +451,14 @@ int main() {
       calculate_product(last_most_significant);
 #ifdef BIN
       temp_dist = md_tri(U1,G);
-      int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon, dist);
+#ifdef OTHER_DIST
+         double other_dist = md_tri(U1, ref_mtx);
+         int seq_index = seq_bins.contains(U1, other_dist, dist - epsilon,
+                                           dist);
+#else
+         int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
+                                           dist);
+#endif
       if (seq_index != -1) {
          fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
                  dist);

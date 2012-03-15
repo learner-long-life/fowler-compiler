@@ -59,12 +59,12 @@ tests/bin_test: tests/bin_test.o tests/bin_debug.o matrix.o complex.o
 test: tests/bin_test
 	tests/tests.sh
 
-# Use binning structure
-gate_bin: complex.o matrix.o main07a_bin.o bin.o
-	g++ -lm -lrt -o gate_bin complex.o matrix.o main07a_bin.o bin.o
+# Use binning structure with profiling
+gate_bin: complex_profile.o matrix_profile.o main07a_bin.o bin.o
+	g++ -pg -lm -lrt -o gate_bin complex_profile.o matrix_profile.o main07a_bin.o bin.o
 
 main07a_bin.o: complex.h matrix.h main07a.c
-	g++ -g3 -DBENCHMARK -DBIN -c main07a.c -o main07a_bin.o
+	g++ -pg -g3 -DBENCHMARK -DBIN -DFIRST_STAGE_ONLY -c main07a.c -o main07a_bin.o
 
 # Profiling
 gate_profile: complex_profile.o matrix_profile.o main07a_profile.o
@@ -100,8 +100,15 @@ main07a_inline.o: main07a.c
 	g++ -g3 -DUSE_INLINE -DBENCHMARK -c main07a.c -o main07a_inline.o
 
 # Use product lookup tree
-gate_plt: main07a_plt.o
+gate_plt: main07a_plt.o complex.o matrix.o
 	g++ -lm -lrt -o gate_plt main07a_plt.o complex.o matrix.o
 
 main07a_plt.o: main07a.c
 	g++ -g3 -DPRODUCT_LOOKUP_TREE -DBENCHMARK -c main07a.c -o main07a_plt.o
+
+# Use binning with alternate distance reference point.
+gate_bin_2: main07a_bin_2.o complex.o matrix.o bin.o
+	g++ -lm -lrt -o gate_bin_2 main07a_bin_2.o complex.o matrix.o bin.o
+
+main07a_bin_2.o: main07a.c
+	g++ -g3 -DOTHER_DIST -DBIN -DBENCHMARK -c main07a.c -o main07a_bin_2.o

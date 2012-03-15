@@ -7,6 +7,7 @@ colortest
 gate
 gate_bench
 gate_bin
+gate_bin_2
 gate_csimd
 gate_generator
 gate_inline
