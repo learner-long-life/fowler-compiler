@@ -65,3 +65,43 @@ gate_bin: complex.o matrix.o main07a_bin.o bin.o
 
 main07a_bin.o: complex.h matrix.h main07a.c
 	g++ -g3 -DBENCHMARK -DBIN -c main07a.c -o main07a_bin.o
+
+# Profiling
+gate_profile: complex_profile.o matrix_profile.o main07a_profile.o
+	g++ -pg -lm -o gate_profile complex_profile.o matrix_profile.o main07a_profile.o
+
+gate_profile_long: complex_profile.o matrix_profile.o main07a.o
+	g++ -pg -lm -o gate_profile_long complex_profile.o matrix_profile.o main07a.o
+
+complex_profile.o: complex.h complex.c
+	g++ -pg -g3 -c complex.c -o complex_profile.o
+
+matrix_profile.o: matrix.h matrix.c
+	g++ -pg -g3 -c matrix.c -o matrix_profile.o
+
+main07a_profile.o: complex.h matrix.h main07a.c
+	g++ -pg -g3 -DFIRST_STAGE_ONLY -c main07a.c -o main07a_profile.o
+
+# Use SIMD
+gate_simd: complex_simd.o matrix.o main07a_simd.o
+	g++ -lm -lrt -o gate_simd complex_simd.o matrix.o main07a_simd.o
+
+main07a_simd.o: complex.h matrix.h main07a.c
+	g++ -g3 -DBENCHMARK -c main07a.c -o main07a_simd.o
+
+complex_simd.o: complex.h complex.c
+	g++ -g3 -DCOMPLEX_SIMD -c complex.c -o complex_simd.o
+
+# Use inlining
+gate_inline: main07a_inline.o
+	g++ -lm -lrt -o gate_inline main07a_inline.o
+
+main07a_inline.o: main07a.c
+	g++ -g3 -DUSE_INLINE -DBENCHMARK -c main07a.c -o main07a_inline.o
+
+# Use product lookup tree
+gate_plt: main07a_plt.o
+	g++ -lm -lrt -o gate_plt main07a_plt.o complex.o matrix.o
+
+main07a_plt.o: main07a.c
+	g++ -g3 -DPRODUCT_LOOKUP_TREE -DBENCHMARK -c main07a.c -o main07a_plt.o

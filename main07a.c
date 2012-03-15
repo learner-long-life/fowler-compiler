@@ -9,6 +9,9 @@
 #include "bin.h"
 #include "complex.h"
 #include "matrix.h"
+#ifdef PRODUCT_LOOKUP_TREE
+#include <vector>
+#endif
 
 #ifdef BENCHMARK
 #include "time.h"
@@ -65,6 +68,7 @@ int skip_product(int last_most_significant);
 int skip_product_print(int last_most_significant); 
 int skip_product_long(int last_most_significant, int width); 
 void calculate_product(int last_most_significant);
+
 #ifdef BIN
    int is_unique_product(double mtx_dist);
    void add_matrix_to_unique(double mtx_dist);
@@ -74,12 +78,14 @@ void calculate_product(int last_most_significant);
    void add_matrix_to_unique();
    void add_matrix_to_structures();
 #endif
+
 void insert_product_in_list();
 void insert_product_in_tree();
 
 double Pi, sqrt2o2, epsilon;
 int *product;
 int *unique_product_lists;
+
 #ifdef BIN
   typedef std::multimap<double, Matrix> MatrixDistMap;
   typedef std::pair<double, Matrix> MatrixDistPair;
@@ -88,9 +94,16 @@ int *unique_product_lists;
 #else
   Matrix *unique_matrices;
 #endif
+
 int *product_check_tree;
 int most_significant, free_list, num_unique, free_node;
 Matrix U, U1, U2, U3, U4, gate_list[NG];
+
+#ifdef PRODUCT_LOOKUP_TREE
+std::vector<int> product_lookup_tree;
+std::vector<Matrix> lookup_cache;
+void insert_product();
+#endif
 
 FILE *out;
 
@@ -114,6 +127,10 @@ void print_sequence(FILE* out, int index) {
 int width;
 
 int main() {
+#ifdef PRODUCT_LOOKUP_TREE
+   // Initialize product lookup tree to zeroes.
+   { for (int i = 0; i < NG; i++) { product_lookup_tree.push_back(0); } }
+#endif
    int last_most_significant, input_format, numerator, denominator;
    int n;
    double dist, temp_dist, x, y;
@@ -316,9 +333,6 @@ int main() {
 #endif
    fprintf(out, "dist=%17.13e\n", dist);
 
-   fprintf(stderr, "G-1 * G should be the identity:\n");
-   pm(stderr, mm(minv(gate_list[Td]), gate_list[Td]));
-
 #ifdef BENCHMARK
    printf("Beginning enumeration...\n", num_unique);
    struct timespec start, end;
@@ -396,6 +410,9 @@ int main() {
 #endif
 #ifdef BIN
    seq_bins.delete_short_sequences(width);
+#endif
+#ifdef FIRST_STAGE_ONLY
+   return 0;
 #endif
 #ifdef DISTANCES
    return 0;
@@ -760,7 +777,80 @@ int is_unique_product() {
 }
 #endif
 
+#ifdef PRODUCT_LOOKUP_TREE
+/**
+ * Inserts the product into the lookup tree.
+ * Call this before calling add_matrix_to_structures.
+ */
+void insert_product() {
+   // Ignore zero-length sequences
+   if (most_significant == 0) { return; }
+
+   // Find location to insert product
+   int index = 0;
+   int i = most_significant;
+   int gate;
+   while (i > 0) {
+     gate = product[i];
+     // The identity gate is 0.  Since identity does nothing, we skip it.
+     if (gate > 0) {
+       index = product_lookup_tree[index + gate];
+       if (index == 0) {
+         fprintf(stderr, "Tried to insert product into incomplete tree.\n");
+         return;
+       }
+     }
+     i--;
+   }
+
+   // Store the new product and create an appropriate branch.
+   gate = product[0];
+   product_lookup_tree[index + gate] = product_lookup_tree.size();
+   product_lookup_tree.push_back(num_unique);
+   for (i = 1; i < NG; i++) {
+     product_lookup_tree.push_back(0);
+   }
+}
+#endif
+
 void calculate_product(int last_most_significant) {
+#ifdef PRODUCT_LOOKUP_TREE
+   // Iterate over tree until product is found.
+   // If an entry is missing, add another entry.
+   int i = last_most_significant;
+   int index = 0;
+   bool first = true;
+   while (i >= 0) {
+     int gate = product[i];
+     int next_index = product_lookup_tree[index + gate];
+     if (next_index == 0) {
+       if (index == 0) {
+         // We arrive here when the product lookup tree has nothing in it.
+         // So, just load the gate into the product.
+         U1 = gate_list[gate];
+         first = false;
+       } else {
+         // We're at the end of the lookup tree.
+         // Take what we can get.
+         if (first) {
+           first = false;
+           U1 = unique_matrices[product_lookup_tree[index]];
+         } else {
+           mm(U1, unique_matrices[product_lookup_tree[index]]);
+         }
+         // Then, advance again.
+         index = product_lookup_tree[gate];
+       }
+     } else {
+       // We've been here before
+       index = next_index;
+     }
+     i--;
+   }
+   // Multiply the last gate
+   mm(U1, unique_matrices[product_lookup_tree[index]]);
+
+#else
    int i;
 
    if (last_most_significant==0) {
@@ -789,6 +879,7 @@ void calculate_product(int last_most_significant) {
       U2=mm(U3,gate_list[product[1]]);
       U1=mm(U2,gate_list[product[0]]);
    }
+#endif
 }
 
 #ifdef BIN
@@ -854,8 +945,16 @@ void insert_product_in_tree() {
    }
 }
 
+#ifdef BIN
 void add_matrix_to_structures(double mtx_dist) {
    insert_product_in_tree();
    insert_product_in_list();
    add_matrix_to_unique(mtx_dist);
 }
+#else
+void add_matrix_to_structures() {
+   insert_product_in_tree();
+   insert_product_in_list();
+   add_matrix_to_unique();
+}
+#endif

@@ -1,6 +1,9 @@
 #include <math.h>
 #include "matrix.h"
 
+#ifdef USE_INLINE
+inline
+#endif
 void mz(Matrix *Mptr) {
    (*Mptr).z11.x = 0;
    (*Mptr).z11.y = 0;
@@ -12,6 +15,9 @@ void mz(Matrix *Mptr) {
    (*Mptr).z22.y = 0;
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 void mi(Matrix *Mptr) {
    (*Mptr).z11.x = 1;
    (*Mptr).z11.y = 0;
@@ -23,6 +29,9 @@ void mi(Matrix *Mptr) {
    (*Mptr).z22.y = 0;
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 Matrix mm(Matrix M1, Matrix M2) {
    Matrix M;
 
@@ -34,6 +43,9 @@ Matrix mm(Matrix M1, Matrix M2) {
    return M;
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 double md(Matrix M1, Matrix M2) {
    Complex z11, z22;
 
@@ -43,10 +55,16 @@ double md(Matrix M1, Matrix M2) {
    return my_cabs(ca(z11, z22));
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 double md_tri(Matrix M1, Matrix M2) {
    return sqrt((2 - sqrt(md(M1, M2)))/2);
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 Matrix minv(Matrix M1) {
   Complex denom = cs(cm(M1.z11, M1.z22), cm(M1.z12, M1.z21));
   double denom_sq = denom.x*denom.x + denom.y*denom.y;
@@ -60,6 +78,9 @@ Matrix minv(Matrix M1) {
   return m;
 }
 
+#ifdef USE_INLINE
+inline
+#endif
 void pm(FILE *out, Matrix M) {
    fprintf(out, "(%19.15e, %19.15e)   (%19.15e, %19.15e)\n", M.z11.x, M.z11.y, M.z12.x, M.z12.y);
    fprintf(out, "(%19.15e, %19.15e)   (%19.15e, %19.15e)\n", M.z21.x, M.z21.y, M.z22.x, M.z22.y);

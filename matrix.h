@@ -8,6 +8,9 @@ typedef struct {
    Complex z11, z12, z21, z22;
 } Matrix;
 
+#ifdef USE_INLINE
+#include "matrix.c"
+#else
 /* Matrix zero */
 void mz(Matrix *Mptr);
 
@@ -31,5 +34,7 @@ void pm(FILE *out, Matrix M);
  * (albeit with two square roots in the computation!).
  */
 double md_tri(Matrix M1, Matrix M2);
+
+#endif
 
 #endif

@@ -5,6 +5,9 @@ typedef struct {
    double x, y;
 } Complex;
 
+#ifdef USE_INLINE
+#include "complex.c"
+#else
 /* Complex multiply */
 Complex cm(Complex z1, Complex z2);
 
@@ -22,5 +25,7 @@ double my_cabs(Complex z);
 
 /* Complex zero test */
 int cz(Complex z);
+
+#endif
 
 #endif
