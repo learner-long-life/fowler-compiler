@@ -60,6 +60,13 @@ test: tests/bin_test
 	tests/tests.sh
 
 # Use binning structure with profiling
+gate_bin_fast: complex.o matrix.o main07a_bin_fast.o bin.o
+	g++ -lm -lrt -o gate_bin_fast complex.o matrix.o main07a_bin_fast.o bin.o
+
+main07a_bin_fast.o: complex.h matrix.h main07a.c
+	g++ -pg -g3 -DBENCHMARK -DBIN -c main07a.c -o main07a_bin_fast.o
+
+# Use binning structure with profiling
 gate_bin: complex_profile.o matrix_profile.o main07a_bin.o bin.o
 	g++ -pg -lm -lrt -o gate_bin complex_profile.o matrix_profile.o main07a_bin.o bin.o
 
