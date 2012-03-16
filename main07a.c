@@ -130,6 +130,20 @@ Matrix ref_mtx;
 //#endif
 int width;
 
+#ifdef BENCHMARK
+struct timespec start;
+
+void print_elapsed_time(FILE* out) {
+  struct timespec end;
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  double start_ns = start.tv_sec * 1000000000. + start.tv_nsec;
+  double end_ns   =   end.tv_sec * 1000000000. +   end.tv_nsec;
+  double duration = (end_ns-start_ns)/1000000000.;
+  fprintf(out, "%.9f\n", duration);
+}
+
+#endif
+
 int main() {
 #ifdef OTHER_DIST
    // initialize reference matrix with pi/5 gate
@@ -346,7 +360,6 @@ int main() {
 
 #ifdef BENCHMARK
    printf("Beginning enumeration...\n", num_unique);
-   struct timespec start, end;
    clock_gettime(CLOCK_MONOTONIC, &start);
    int last_ms = 1;
 #endif
@@ -401,6 +414,10 @@ int main() {
 #endif
                dist=temp_dist;
                fprintf(out, "dist=%17.13e\n", dist);
+#ifdef BENCHMARK
+               fprintf(out, "DIST\t%17.13e\t", dist);
+               print_elapsed_time(out);
+#endif
             }
             print_product(out, product, most_significant);
             fflush(out);
@@ -409,12 +426,8 @@ int main() {
 #ifdef BENCHMARK
       if (last_ms != most_significant) {
          last_ms = most_significant;
-         clock_gettime(CLOCK_MONOTONIC, &end);
-         double start_ns = start.tv_sec * 1000000000. + start.tv_nsec;
-         double end_ns   =   end.tv_sec * 1000000000. +   end.tv_nsec;
-         double duration = (end_ns-start_ns)/1000000000.;
-         printf("Time to calculate %d sequences to length %d: %.9f\n",
-                num_unique, last_ms, duration);
+         fprintf(out, "SEQ_LEN\t%d\t%d\t", num_unique, last_ms);
+         print_elapsed_time(out);
       }
 #endif
    }
@@ -422,12 +435,8 @@ int main() {
    fprintf(out, "num_unique: %d\n", num_unique);
 #ifdef BENCHMARK
    {
-      clock_gettime(CLOCK_MONOTONIC, &end);
-      double start_ns = start.tv_sec * 1000000000. + start.tv_nsec;
-      double end_ns   =   end.tv_sec * 1000000000. +   end.tv_nsec;
-      double duration = (end_ns-start_ns)/1000000000.;
-      printf("num_unique: %d\n", num_unique);
-      printf("Elapsed time: %.9f\n", duration);
+      fprintf(out, "FINISHED STAGE 1\t%d\t%d\t", num_unique, last_ms);
+      print_elapsed_time(out);
    }
 #endif
 #ifdef BIN
@@ -477,6 +486,10 @@ int main() {
 #endif
             dist=temp_dist;
             fprintf(out, "dist=%17.13e\n", dist);
+#ifdef BENCHMARK
+            fprintf(out, "DIST\t%17.13e\t", dist);
+            print_elapsed_time(out);
+#endif
          }
          print_product(out, product, most_significant);
          fflush(out);
@@ -484,12 +497,8 @@ int main() {
 #ifdef BENCHMARK
       if (last_ms != most_significant) {
          last_ms = most_significant;
-         clock_gettime(CLOCK_MONOTONIC, &end);
-         double start_ns = start.tv_sec * 1000000000. + start.tv_nsec;
-         double end_ns   =   end.tv_sec * 1000000000. +   end.tv_nsec;
-         double duration = (end_ns-start_ns)/1000000000.;
-         printf("Time to calculate %d sequences to length %d: %.9f\n",
-                num_unique, last_ms, duration);
+         fprintf(out, "SEQ_LEN\t%d\t%d\t", num_unique, last_ms);
+         print_elapsed_time(out);
       }
 #endif
    }
