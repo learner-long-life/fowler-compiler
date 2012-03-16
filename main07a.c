@@ -381,8 +381,8 @@ int main() {
                                            dist);
 #endif
          if (seq_index != -1) {
-            fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
-                    dist);
+            fprintf(out, "MEET\t%.10f\t", dist);
+            print_elapsed_time(out);
             print_product(out, product, most_significant);
             print_sequence(out, seq_index);
             fflush(out);
@@ -415,7 +415,13 @@ int main() {
                dist=temp_dist;
                fprintf(out, "dist=%17.13e\n", dist);
 #ifdef BENCHMARK
-               fprintf(out, "DIST\t%17.13e\t", dist);
+               fprintf(out, "DIST\t%17.13e\t",
+#ifdef BIN
+                  dist
+#else
+                  sqrt((2-sqrt(dist))/2)
+#endif
+               );
                print_elapsed_time(out);
 #endif
             }
@@ -469,8 +475,8 @@ int main() {
                                            dist);
 #endif
       if (seq_index != -1) {
-         fprintf(out, "Found 'meet in the middle' sequence with distance %.10f: \n",
-                 dist);
+         fprintf(out, "MEET\t%.10f\t", dist);
+         print_elapsed_time(out);
          print_product(out, product, most_significant);
          print_sequence(out, seq_index);
          fflush(out);
@@ -487,7 +493,13 @@ int main() {
             dist=temp_dist;
             fprintf(out, "dist=%17.13e\n", dist);
 #ifdef BENCHMARK
-            fprintf(out, "DIST\t%17.13e\t", dist);
+            fprintf(out, "DIST\t%17.13e\t",
+#ifdef BIN
+               dist
+#else
+               sqrt((2-sqrt(dist))/2)
+#endif
+            );
             print_elapsed_time(out);
 #endif
          }
