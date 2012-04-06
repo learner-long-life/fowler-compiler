@@ -2,11 +2,28 @@
 #define MATRIXH
 
 #include "stdio.h"
-#include "complex.h"
 
+#ifndef PAULI_BASIS
+#include "complex.h"
+#endif
+
+#ifdef PAULI_BASIS
+class Matrix {
+public:
+  double a[4];
+  Matrix();
+  Matrix(double a0, double a1, double a2, double a3);
+  double &operator[](const int index);
+  double operator[](const int index) const;
+  double dot(Matrix &b) const;
+  Matrix operator*(const double n) const;
+  Matrix operator*(const Matrix m) const;
+};
+#else
 typedef struct {
    Complex z11, z12, z21, z22;
 } Matrix;
+#endif
 
 #ifdef USE_INLINE
 #include "matrix.c"

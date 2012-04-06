@@ -8,7 +8,7 @@ matrix.o: matrix.h matrix.c
 	g++ -g3 -c matrix.c
 
 main07a.o: complex.h matrix.h main07a.c
-	g++ -g3 -c main07a.c
+	g++ -g3 -DPRINT_MATRIX_DIST -c main07a.c
 
 clean:
 	rm -f gate complex.o matrix.o main07a.o *.tmp
@@ -119,3 +119,13 @@ gate_bin_2: main07a_bin_2.o complex.o matrix.o bin.o
 
 main07a_bin_2.o: main07a.c
 	g++ -g3 -DOTHER_DIST -DBIN -DBENCHMARK -c main07a.c -o main07a_bin_2.o
+
+# Use Aram Harrow's modified Pauli basis
+gate_pb: main07a_pb.o complex.o matrix_pb.o
+	g++ -lm -lrt -DPRINT_MATRIX_DIST -o gate_pb main07a_pb.o matrix_pb.o complex.o
+
+main07a_pb.o: main07a.c
+	g++ -g3 -DPAULI_BASIS -DPRINT_MATRIX_DIST -c main07a.c -o main07a_pb.o
+
+matrix_pb.o: matrix.c
+	g++ -g3 -DPAULI_BASIS -c matrix.c -o matrix_pb.o

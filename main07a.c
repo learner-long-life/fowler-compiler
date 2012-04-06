@@ -120,10 +120,6 @@ void print_sequence(FILE* out, int index) {
 }
 #endif
 
-#ifdef OTHER_DIST
-Matrix ref_mtx;
-#endif
-
 //#ifdef DISTANCES
 //double *distances;
 //int next_dist;
@@ -145,13 +141,6 @@ void print_elapsed_time(FILE* out) {
 #endif
 
 int main() {
-#ifdef OTHER_DIST
-   // initialize reference matrix with pi/5 gate
-   mz(&ref_mtx);
-   ref_mtx.z11.x = 1;
-   ref_mtx.z22.x = sin(1/5.);
-   ref_mtx.z22.y = cos(1/5.);
-#endif
 #ifdef PRODUCT_LOOKUP_TREE
    // Initialize product lookup tree to zeroes.
    { for (int i = 0; i < NG; i++) { product_lookup_tree.push_back(0); } }
@@ -215,6 +204,11 @@ int main() {
    fscanf(in, "%d", &input_format);
    fprintf(out, "input_format: %d\n", input_format);
    if (input_format==0) {
+#ifdef PAULI_BASIS
+      fprintf(stderr, "Cannot yet convert from standard matrix"
+                      " to Pauli basis.\n");
+      exit(10);
+#else
       fscanf(in, "%lf", &G.z11.x);
       fscanf(in, "%lf", &G.z11.y);
       fscanf(in, "%lf", &G.z12.x);
@@ -223,18 +217,58 @@ int main() {
       fscanf(in, "%lf", &G.z21.y);
       fscanf(in, "%lf", &G.z22.x);
       fscanf(in, "%lf", &G.z22.y);
+#endif
    }
    else if (input_format==1) {
       fscanf(in, "%d", &numerator);
       fscanf(in, "%d", &denominator);
       fprintf(out, "numerator: %d, denominator: %d\n", numerator, denominator);
+#ifdef PAULI_BASIS
+      x = Pi*numerator/(2*denominator);
+      G[0] = cos(x);
+      G[3] = -sin(x);
+#else
       G.z11.x=1;
       x = Pi*numerator/denominator;
       G.z22.x=cos(x);
       G.z22.y=sin(x);
+#endif
    }
    fclose(in);
 
+#ifdef PAULI_BASIS
+   gate_list[I]    = Matrix(1, 0, 0, 0); /* Identity gate */
+   gate_list[H]    = Matrix(0, sqrt2o2, 0, sqrt2o2); /* Hadamard gate */
+   gate_list[X]    = Matrix(0, 1, 0, 0); /* X gate */
+   gate_list[Z]    = Matrix(0, 0, 0, 1); /* Z gate */
+   gate_list[S]    = Matrix(-sqrt2o2, 0, 0, sqrt2o2); /* S gate */
+
+   gate_list[Sd]   = Matrix(-sqrt2o2, 0, 0, -sqrt2o2); /* Sd gate */
+   gate_list[HX]   = gate_list[X]  * gate_list[H]; /* HX gate */
+   gate_list[HZ]   = gate_list[Z]  * gate_list[H]; /* HZ gate */
+   gate_list[HS]   = gate_list[S]  * gate_list[H]; /* HS gate */
+   gate_list[HSd]  = gate_list[Sd] * gate_list[H]; /* HSd gate */
+
+   gate_list[XZ]   = gate_list[Z]  * gate_list[X]; /* XZ gate */
+   gate_list[XS]   = gate_list[S]  * gate_list[X]; /* XS gate */
+   gate_list[XSd]  = gate_list[Sd] * gate_list[X]; /* XSd gate */
+   gate_list[SH]   = gate_list[H]  * gate_list[S]; /* SH gate */
+   gate_list[SdH]  = gate_list[H]  * gate_list[Sd]; /* SdH gate */
+
+   gate_list[HXZ]  = gate_list[Z]  * (gate_list[X]  * gate_list[H]); /* HXZ gate */
+   gate_list[HXS]  = gate_list[S]  * (gate_list[X]  * gate_list[H]); /* HXS gate */
+   gate_list[HXSd] = gate_list[Sd] * (gate_list[X]  * gate_list[H]); /* HXSd gate */
+   gate_list[HSH]  = gate_list[H]  * (gate_list[S]  * gate_list[H]); /* HSH gate */
+   gate_list[HSdH] = gate_list[H]  * (gate_list[Sd] * gate_list[H]); /* HSdH gate */
+
+   gate_list[XSH]  = gate_list[H]  * (gate_list[S]  * gate_list[X]); /* XSH gate */
+   gate_list[XSdH] = gate_list[H]  * (gate_list[Sd] * gate_list[X]); /* XSdH gate */
+   gate_list[SHSd] = gate_list[Sd] * (gate_list[H]  * gate_list[S]); /* SHSd gate */
+   gate_list[SdHS] = gate_list[S]  * (gate_list[H]  * gate_list[Sd]); /* SdHS gate */
+   gate_list[T]    = Matrix(cos(Pi/8), 0, 0, -sin(Pi/8)); /* T gate */
+
+   gate_list[Td]   = Matrix(cos(Pi/8), 0, 0, sin(Pi/8)); /* Td gate */
+#else
    /* Identity gate */
    mi(&gate_list[I]);
 
@@ -348,6 +382,17 @@ int main() {
    gate_list[Td].z11.x = 1;
    gate_list[Td].z22.x = sqrt2o2;
    gate_list[Td].z22.y = -sqrt2o2;
+#endif
+
+#ifdef PRINT_MATRIX_DIST
+   // Print distances from the gate matrices to the target gate.
+   for (int i = 0; i < NG; i++) {
+     double d = md_tri(gate_list[i], G);
+     print_gate(stdout, i);
+     printf(": %.9f\n", d);
+   }
+   exit(0);
+#endif
 
 #ifdef BIN
    // use the triangle-inequality distance measure
@@ -372,14 +417,8 @@ int main() {
 #ifdef BIN
       temp_dist = md_tri(U1,G);
       if (is_unique_product(temp_dist)) {
-#ifdef OTHER_DIST
-         double other_dist = md_tri(U1, ref_mtx);
-         int seq_index = seq_bins.contains(U1, other_dist, dist - epsilon,
-                                           dist);
-#else
          int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
                                            dist);
-#endif
          if (seq_index != -1) {
             fprintf(out, "MEET\t%.10f\t", dist);
             print_elapsed_time(out);
@@ -389,12 +428,7 @@ int main() {
          }
          // TODO: replicate seq_bins.contains in the second stage check.
          Matrix inv = mm(G, minv(U1));
-#ifdef OTHER_DIST
-         seq_bins.insert(md_tri(inv, ref_mtx), inv, free_list,
-                         most_significant + 1);
-#else
          seq_bins.insert(md_tri(inv, G), inv, free_list, most_significant + 1);
-#endif
          add_matrix_to_structures(temp_dist);
 #else
       if (is_unique_product()) {
@@ -466,14 +500,8 @@ int main() {
       calculate_product(last_most_significant);
 #ifdef BIN
       temp_dist = md_tri(U1,G);
-#ifdef OTHER_DIST
-         double other_dist = md_tri(U1, ref_mtx);
-         int seq_index = seq_bins.contains(U1, other_dist, dist - epsilon,
-                                           dist);
-#else
          int seq_index = seq_bins.contains(U1, temp_dist, dist - epsilon,
                                            dist);
-#endif
       if (seq_index != -1) {
          fprintf(out, "MEET\t%.10f\t", dist);
          print_elapsed_time(out);
