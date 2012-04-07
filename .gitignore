@@ -12,6 +12,7 @@ gate_bin_fast
 gate_csimd
 gate_generator
 gate_inline
+gate_pb
 gate_plt
 gate_profile
 gate_profile_long

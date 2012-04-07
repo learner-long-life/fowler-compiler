@@ -22,9 +22,11 @@ def md(M1, M2):
   z22 = ca(cm(cc(M1.z12), M2.z12), cm(cc(M1.z22), M2.z22));
 
   return sqrt((2-abs(z11+z22))/2)
+  #return abs(z11+z22)
 
 def pmd(a, b):
-  return sqrt((2 - abs(sum(x*y for x, y in zip(a, b))))/2)
+  return sqrt(1 - abs(sum(x*y for x, y in zip(a, b))))
+  #return abs(sum(x*y for x, y in zip(a, b)))*2
 
 sqrt2o2 = sqrt(2)/2
 
