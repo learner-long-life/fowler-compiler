@@ -104,7 +104,9 @@ double md(Matrix M1, Matrix M2) {
    Matrix &a = M1;
    Matrix &b = M2;
    double tr = a.dot(b);
-   return tr < 0 ? -tr : tr;
+   // TODO: fix this hack...
+   return tr * tr * 4;
+   //return tr < 0 ? -tr : tr;
 #else
    Complex z11, z22;
 
@@ -119,12 +121,7 @@ double md(Matrix M1, Matrix M2) {
 inline
 #endif
 double md_tri(Matrix M1, Matrix M2) {
-#ifdef PAULI_BASIS
-   // TODO: why does this work?
-   return sqrt(1 - md(M1, M2));
-#else
    return sqrt((2 - sqrt(md(M1, M2)))/2);
-#endif
 }
 
 #ifdef USE_INLINE
