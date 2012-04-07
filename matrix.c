@@ -103,9 +103,9 @@ double md(Matrix M1, Matrix M2) {
 #ifdef PAULI_BASIS
    Matrix &a = M1;
    Matrix &b = M2;
-   double tr = a.dot(b);
-   // TODO: fix this hack...
-   return tr * tr * 4;
+   double tr = a.dot(b) * 2;
+   // TODO: we shouldn't need to square the distance.
+   return tr * tr;
    //return tr < 0 ? -tr : tr;
 #else
    Complex z11, z22;

@@ -17,6 +17,13 @@
 #include "time.h"
 #endif
 
+#define FSCANF(in, fmt, ...) \
+if (fscanf(in, fmt, __VA_ARGS__) <= 0) {\
+  fprintf(stderr, "Could not scan %s from input stream at line %d\n",\
+          fmt, __LINE__);\
+  exit(20);\
+}
+
 /* Number gates */
 #define NG 26
 
@@ -147,7 +154,7 @@ int main() {
 #endif
    int last_most_significant, input_format, numerator, denominator;
    int n;
-   double dist, temp_dist, x, y;
+   double dist, temp_dist, x;
    Matrix G;
    FILE *in = (FILE *)fopen("in", "r");
    out = (FILE *)fopen("out", "w");
@@ -158,10 +165,10 @@ int main() {
    epsilon=1e-10;
 
    /* number of unique products to find */
-   fscanf(in, "%d", &n);
+   FSCANF(in, "%d", &n);
 
    /* width of product check tree */
-   fscanf(in, "%d", &width);
+   FSCANF(in, "%d", &width);
    fprintf(out, "number of unique products to find n: %d, width: %d\n", n, width);
 
    //#ifdef DISTANCES
@@ -201,7 +208,7 @@ int main() {
 
    /* Gate to approximate */
    mz(&G);
-   fscanf(in, "%d", &input_format);
+   FSCANF(in, "%d", &input_format);
    fprintf(out, "input_format: %d\n", input_format);
    if (input_format==0) {
 #ifdef PAULI_BASIS
@@ -209,19 +216,19 @@ int main() {
                       " to Pauli basis.\n");
       exit(10);
 #else
-      fscanf(in, "%lf", &G.z11.x);
-      fscanf(in, "%lf", &G.z11.y);
-      fscanf(in, "%lf", &G.z12.x);
-      fscanf(in, "%lf", &G.z12.y);
-      fscanf(in, "%lf", &G.z21.x);
-      fscanf(in, "%lf", &G.z21.y);
-      fscanf(in, "%lf", &G.z22.x);
-      fscanf(in, "%lf", &G.z22.y);
+      FSCANF(in, "%lf", &G.z11.x);
+      FSCANF(in, "%lf", &G.z11.y);
+      FSCANF(in, "%lf", &G.z12.x);
+      FSCANF(in, "%lf", &G.z12.y);
+      FSCANF(in, "%lf", &G.z21.x);
+      FSCANF(in, "%lf", &G.z21.y);
+      FSCANF(in, "%lf", &G.z22.x);
+      FSCANF(in, "%lf", &G.z22.y);
 #endif
    }
    else if (input_format==1) {
-      fscanf(in, "%d", &numerator);
-      fscanf(in, "%d", &denominator);
+      FSCANF(in, "%d", &numerator);
+      FSCANF(in, "%d", &denominator);
       fprintf(out, "numerator: %d, denominator: %d\n", numerator, denominator);
 #ifdef PAULI_BASIS
       x = Pi*numerator/(2*denominator);

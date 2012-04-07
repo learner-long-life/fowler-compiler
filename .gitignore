@@ -3,6 +3,7 @@
 *.tmp
 /*.txt
 /flann
+Makefile2
 colortest
 gate
 gate_bench
@@ -18,6 +19,6 @@ gate_profile
 gate_profile_long
 gmon.out
 matrix_benchmark
-out
+out*
 tests/*.o
 tests/bin_test
