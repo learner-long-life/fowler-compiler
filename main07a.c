@@ -411,7 +411,7 @@ int main() {
    fprintf(out, "dist=%17.13e\n", dist);
 
 #ifdef BENCHMARK
-   printf("Beginning enumeration...\n", num_unique);
+   printf("Beginning enumeration...\n");
    clock_gettime(CLOCK_MONOTONIC, &start);
    int last_ms = 1;
 #endif
@@ -495,6 +495,7 @@ int main() {
 #ifdef DISTANCES
    return 0;
 #endif
+   return 0;
 
    /*
    print_unique_product_lists(out);

@@ -66,7 +66,7 @@ test: tests/bin_test
 
 # Use binning structure with profiling
 gate_bin_fast: complex.o matrix.o main07a_bin_fast.o bin.o
-	${CC} ${LIBS} -lrt -o gate_bin_fast complex.o matrix.o main07a_bin_fast.o bin.o
+	${CC} -pg ${LIBS} -o gate_bin_fast complex.o matrix.o main07a_bin_fast.o bin.o -lrt
 
 main07a_bin_fast.o: complex.h matrix.h main07a.c
 	${CC} -pg ${CCFLAGS} -DBENCHMARK -DBIN -c main07a.c -o main07a_bin_fast.o
