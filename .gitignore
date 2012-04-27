@@ -9,6 +9,7 @@ gate
 gate_bench
 gate_bin
 gate_bin_2
+gate_bin_count
 gate_bin_fast
 gate_csimd
 gate_generator

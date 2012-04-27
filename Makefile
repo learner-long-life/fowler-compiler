@@ -134,3 +134,14 @@ main07a_pb.o: main07a.c
 
 matrix_pb.o: matrix.c
 	${CC} ${CCFLAGS} -DPAULI_BASIS -c matrix.c -o matrix_pb.o
+
+# Use binning structure with false positive counting
+gate_bin_count: complex.o matrix.o main07a_bin_count.o bin_count.o
+	${CC} ${LIBS} -o gate_bin_count complex.o matrix.o main07a_bin_count.o bin_count.o -lrt
+
+main07a_bin_count.o: complex.h matrix.h main07a.c
+	${CC} ${CCFLAGS} -DBENCHMARK -DBIN -DCOUNT_SEARCHES -c main07a.c -o main07a_bin_count.o
+
+bin_count.o: complex.h matrix.h bin.h bin.cpp
+	${CC} ${CCFLAGS} -DBENCHMARK -DBIN -DCOUNT_SEARCHES -c bin.cpp -o bin_count.o
+

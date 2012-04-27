@@ -7,6 +7,10 @@
 
 using namespace std;
 
+#ifdef COUNT_SEARCHES
+unsigned long search_counter = 0, positive_counter = 0;
+#endif
+
 MatrixItem::MatrixItem(Matrix &_mtx, double _dist, int _sequence_index,
                        int _sequence_length) :
   mtx(_mtx), dist(_dist), sequence_index(_sequence_index),
@@ -47,6 +51,10 @@ void BinSet::delete_short_sequences(int min_length) {
 }
 
 int BinSet::contains(Matrix m, double dist, double threshold, double &acc) {
+#ifdef COUNT_SEARCHES
+    int ret_val = -1;
+#endif
+
   // Search over sequences by increasing length
   for (BinMap::iterator iter = bins.begin();
        iter != bins.end(); iter++) {
@@ -65,30 +73,44 @@ int BinSet::contains(Matrix m, double dist, double threshold, double &acc) {
       // Both matrices should have about the same distance
       // to the target matrix.  Otherwise, by the triangle
       // inequality, we know they won't be near each other.
-      double dist_diff = dist - item.dist;
 #ifdef DEBUG_BINS
-        cout << "Matrix distance: " << dist_diff << endl;
+      cout << "Matrix distance: " << dist_diff << endl;
 #endif
-      if (dist_diff >= -threshold && dist_diff <= threshold) {
-        // Now, see if the matrices are within the threshold distance of
-        // each other.  If they are, then one could connect their corresponding
-        // sequences to obtain a result matrix.
-        // Thus, the sequence for the discovered matrix should be returned.
-        // TODO: optimize out the square roots
-        double mtx_diff = md_tri(item.mtx, m);
+      // Now, see if the matrices are within the threshold distance of
+      // each other.  If they are, then one could connect their corresponding
+      // sequences to obtain a result matrix.
+      // Thus, the sequence for the discovered matrix should be returned.
+      // TODO: optimize out the square roots
+      double mtx_diff = md_tri(item.mtx, m);
+
 #ifdef DEBUG_BINS
         cout << "Distance between matrices: " << mtx_diff << endl;
 #endif
-        if (mtx_diff <= threshold) {
-#ifdef DEBUG_BINS
-          cout << "MATRIX FOUND! Sequence " << item.sequence_index << endl;
+
+#ifdef COUNT_SEARCHES
+      ret_val = item.sequence_index;
+      search_counter++;
 #endif
-          acc = mtx_diff;
-          return item.sequence_index;
-        }
+
+      if (mtx_diff <= threshold) {
+#ifdef DEBUG_BINS
+        cout << "MATRIX FOUND! Sequence " << item.sequence_index << endl;
+#endif
+        acc = mtx_diff;
+#ifdef COUNT_SEARCHES
+        ret_val = item.sequence_index;
+        positive_counter++;
+#else
+        return item.sequence_index;
+#endif
       }
     }
   }
+
+#ifdef COUNT_SEARCHES
+  return ret_val;
+#else
   return -1;
+#endif
 }
 

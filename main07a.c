@@ -495,7 +495,12 @@ int main() {
 #ifdef DISTANCES
    return 0;
 #endif
+#ifdef COUNT_SEARCHES
+   printf("Positive rate: %f (%lu / %lu)\n",
+          positive_counter / (double) search_counter,
+          positive_counter, search_counter);
    return 0;
+#endif
 
    /*
    print_unique_product_lists(out);

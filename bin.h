@@ -5,6 +5,10 @@
 #include <map>
 #include "matrix.h"
 
+#ifdef COUNT_SEARCHES
+extern unsigned long search_counter, positive_counter;
+#endif
+
 /**
  * A single matrix item.
  */
