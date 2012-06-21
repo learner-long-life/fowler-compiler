@@ -1,0 +1,18 @@
+Source code for a quantum compiler which enumerates over the Clifford group and T (pi/8) gate with skip-ahead
+optimizations to produce approximate gate sequences of optimal length.
+
+(c) Austin Fowler 2004-2012.
+
+This work is described in more detail in the following paper:
+http://arxiv.org/abs/quant-ph/0411206
+
+Please cite this paper and Austin Fowler for the original code (in the master branch).
+
+The branch 'jeff" was added by Jeffrey Booth to add meet-in-the-middle optimizations.
+
+(c) Jeffrey Booth 2012
+
+This work is described in more detail in the following paper:
+http://arxiv.org/abs/1206.3348
+
+Please cite this paper and Jeffrey Booth for the meet-in-the-middle optimizations.
