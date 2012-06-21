@@ -1,3 +1,7 @@
+This code is released under a 3-clause BSD license, found in the file LICENSE.
+By downloading, modifying, and/or distributing this code in either source or binary form,
+you agree to be bound by this license.
+
 Source code for a quantum compiler which enumerates over the Clifford group and T (pi/8) gate with skip-ahead
 optimizations to produce approximate gate sequences of optimal length.
 
