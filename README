@@ -11,6 +11,7 @@ This work is described in more detail in the following paper:
 http://arxiv.org/abs/quant-ph/0411206
 
 Please cite this paper and Austin Fowler for the original code (in the master branch).
+You can email Austin for support at austingfowler at gmail.
 
 The branch 'jeff" was added by Jeffrey Booth to add meet-in-the-middle optimizations.
 
